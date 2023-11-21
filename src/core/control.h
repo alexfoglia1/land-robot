@@ -1,13 +1,13 @@
 #ifndef CONTROL_H
 #define CONTROL_H
 
-#define BIT_DATA_RESOLUTION 0.00274658203125f // 180 degrees / 2^16
-
 #include "comm.h"
 #include "motors.h"
 #include "pid.h"
 
 #include <stdint.h>
+
+#define SATURATE(_A, _MIN, _MAX)(_A < _MIN ? _MIN : _A > _MAX ? _MAX : _A)
 
 enum class Direction : uint8_t
 {
@@ -28,11 +28,9 @@ private:
     Comm* _comm;
     Motors* _motors;
     uint8_t _throttleSetPoint;
-    float _headingSetPoint;
+    int16_t _gyroZSetPoint;
     Direction _directionSetPoint;
     Pid _pid;
-
-    float toAngle180(uint16_t word);
 
 };
 

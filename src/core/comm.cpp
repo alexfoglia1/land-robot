@@ -80,13 +80,8 @@ void Comm::handleMessageRx(CtrlMessage *message)
         _throttleData = message->data;
         _backwardData = true;
         break;
-    case MsgType::TURN_LEFT:
-        _turnLeftData = message->data;
-        _turnRightData = 0;
-        break;
-    case MsgType::TURN_RIGHT:
-        _turnLeftData = 0;
-        _turnRightData = message->data;
+    case MsgType::TURN:
+        _turnData = static_cast<int16_t>(message->data);
         break;
     }
 }
@@ -104,15 +99,9 @@ uint16_t Comm::throttleData()
 }
 
 
-uint16_t Comm::turnLeftData()
+int16_t Comm::turnData()
 {
-    return _turnLeftData;
-}
-
-
-uint16_t Comm::turnRightData()
-{
-    return _turnRightData;
+    return _turnData;
 }
 
 

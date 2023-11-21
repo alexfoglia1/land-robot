@@ -14,8 +14,7 @@ enum class MsgType : uint8_t
 {
     THROTTLE = 0x00,
     BREAK,
-    TURN_LEFT,
-    TURN_RIGHT
+    TURN
 };
 
 
@@ -41,8 +40,7 @@ public:
 
     bool backwardData();
     uint16_t throttleData();
-    uint16_t turnLeftData();
-    uint16_t turnRightData();
+    int16_t turnData();
 
 private:
     bool _init;
@@ -50,8 +48,7 @@ private:
 
     bool _backwardData;
     uint16_t _throttleData;
-    uint16_t _turnLeftData;
-    uint16_t _turnRightData;
+    int16_t _turnData;
 
 
 };
