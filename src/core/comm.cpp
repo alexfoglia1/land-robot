@@ -31,6 +31,10 @@ Comm::Comm()
     memset(&_addr, 0x00, sizeof(struct sockaddr_in));
     _init = false;
     _started = false;
+
+    _throttleData = 0;
+    _turnData = 0;
+    _backwardData = false;
 }
 
 

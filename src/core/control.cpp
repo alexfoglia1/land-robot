@@ -1,14 +1,17 @@
 #include "control.h"
 
+#include <unistd.h>
 #include <stdio.h>
 
-Control::Control(Comm* comm, Motors* motors) :
-    _pid(0.01f, 0.0, 0.0, 0.0, 0.0, 255.0)
+Control::Control(Comm* comm, Motors* motors, MPU6050* imu) :
+    _pid(3.0f, 0.0, 0.0, 0.0, 0.0, 255.0)
 {
     _comm = comm;
     _motors = motors;
+    _imu = imu;
 
     _gyroZSetPoint = 0;
+    _gz = 0;
     _throttleSetPoint = 0x00;
     _directionSetPoint = Direction::FORWARD;
 }
@@ -16,15 +19,14 @@ Control::Control(Comm* comm, Motors* motors) :
 
 void __attribute__((noreturn)) Control::loop()
 {
-    int i= 0;
     while (1)
     {
-        i++;
         _directionSetPoint = _comm->backwardData() ? Direction::BACKWARD : Direction::FORWARD;
         _throttleSetPoint = _comm->throttleData() & 0xFF;
         _gyroZSetPoint = _comm->turnData();
 
-        float gz = 0.0f; //todo: read from mpu6050
+        float gz = -_imu->rawData.gz / 131.f;
+        _gz = _gz * 0.75f + gz*0.25f;
         float pidOut = _pid.controller(_gyroZSetPoint, gz);
 
         uint16_t leftCmd = SATURATE(_throttleSetPoint + pidOut, 0x00, 0xFF);
@@ -38,10 +40,9 @@ void __attribute__((noreturn)) Control::loop()
 
         _motors->setSpeed(leftCmd & 0xFF, rightCmd & 0xFF);
 
-        if (i == 1000)
-        {
-            printf("throttleSp(%d), gyroZSetPoint(%d), pidOut(%f), leftCmd(%d), rightCmd(%d)\r\n\r\n", _throttleSetPoint, _gyroZSetPoint, pidOut, leftCmd, rightCmd);
-            i = 0;
-        }
+        printf("gyroZ(%f)\tpidOut(%f)\r\n", gz, pidOut);
+
+
+        usleep(5 * 1000);
     }
 }
