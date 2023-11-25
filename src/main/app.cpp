@@ -1,6 +1,6 @@
 #include "app.h"
 #include "control.h"
-#include "mpu6050.h"
+#include "mpu9265.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -11,7 +11,7 @@ int main(int argc, char** argv)
 
     Motors motors;
     Comm comm;
-    MPU6050 mpu;
+    MPU9265 mpu;
 
     if (mpu.serialInit("/dev/ttyUSB0"))
     {

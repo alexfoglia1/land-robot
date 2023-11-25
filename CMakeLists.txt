@@ -10,7 +10,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 add_executable(
 land-robot
 ${CMAKE_SOURCE_DIR}/src/drivers/motors.h
-${CMAKE_SOURCE_DIR}/src/drivers/mpu6050.h
+${CMAKE_SOURCE_DIR}/src/drivers/mpu9265.h
 
 ${CMAKE_SOURCE_DIR}/src/core/control.h
 ${CMAKE_SOURCE_DIR}/src/core/pid.h
@@ -20,7 +20,7 @@ ${CMAKE_SOURCE_DIR}/src/main/app.h
 
 
 ${CMAKE_SOURCE_DIR}/src/drivers/motors.cpp
-${CMAKE_SOURCE_DIR}/src/drivers/mpu6050.cpp
+${CMAKE_SOURCE_DIR}/src/drivers/mpu9265.cpp
 
 ${CMAKE_SOURCE_DIR}/src/core/control.cpp
 ${CMAKE_SOURCE_DIR}/src/core/pid.cpp

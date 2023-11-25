@@ -2,7 +2,7 @@
 #define CONTROL_H
 
 #include "comm.h"
-#include "mpu6050.h"
+#include "mpu9265.h"
 #include "motors.h"
 #include "pid.h"
 
@@ -21,14 +21,14 @@ class Control
 {
 public:
 
-    Control(Comm* comm, Motors* motors, MPU6050* imu);
+    Control(Comm* comm, Motors* motors, MPU9265* imu);
 
     void loop();
 private:
 
     Comm* _comm;
     Motors* _motors;
-    MPU6050* _imu;
+    MPU9265* _imu;
     uint8_t _throttleSetPoint;
     int16_t _gyroZSetPoint;
     float _gz;

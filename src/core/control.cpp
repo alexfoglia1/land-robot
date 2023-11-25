@@ -3,7 +3,7 @@
 #include <unistd.h>
 #include <stdio.h>
 
-Control::Control(Comm* comm, Motors* motors, MPU6050* imu) :
+Control::Control(Comm* comm, Motors* motors, MPU9265* imu) :
     _pid(3.0f, 0.0, 0.0, 0.0, 0.0, 255.0)
 {
     _comm = comm;
