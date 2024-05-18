@@ -4,15 +4,21 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <sys/ioctl.h>
-#include <string.h>
-#include <i2c/smbus.h>
-#include <linux/i2c-dev.h>
+#include <limits>
+
+extern "C"
+{
+    #include <linux/i2c-dev.h>
+    #include <i2c/smbus.h>
+}
+
 
 
 MPU9265::MPU9265()
 {
     _fd = -1;
-    memset(&_rawData, 0x00, sizeof(MPU9265RawData));
+    _gyroResolution = GyroResolution::GYRO_250_DPS;
+    _accelResolution = AccelResolution::ACCEL_2G;
 }
 
 bool MPU9265::init()
@@ -28,7 +34,7 @@ bool MPU9265::init()
             uint8_t one  = 0x01;
             /** Set sample rate = 8Khz (div = 0 + 1) **/
             int writeRes = i2cWrite(MPU9265::Register::SMPLRT_DIV, &zero, 1);
-            if (writeRes != 1)
+            if (writeRes != 0)
             {
                 perror("Set sample rate");
                 return false;
@@ -36,7 +42,7 @@ bool MPU9265::init()
 
             /** Reset all sensors **/
             writeRes = i2cWrite(MPU9265::Register::PWR_MGMT_1, &zero, 1);
-            if (writeRes != 1)
+            if (writeRes != 0)
             {
                 perror("Reset all sensors");
                 return false;
@@ -44,7 +50,7 @@ bool MPU9265::init()
 
             /** Power management and crystal settings **/
             writeRes = i2cWrite(MPU9265::Register::PWR_MGMT_1, &one, 1);
-            if (writeRes != 1)
+            if (writeRes != 0)
             {
                 perror("Power management");
                 return false;
@@ -52,7 +58,7 @@ bool MPU9265::init()
             
             /** Write to Configuration register **/
             writeRes = i2cWrite(MPU9265::Register::CONFIG, &zero, 1);
-            if (writeRes != 1)
+            if (writeRes != 0)
             {
                 perror("Configuration register");
                 return false;
@@ -71,7 +77,7 @@ bool MPU9265::init()
             }
 
             writeRes = i2cWrite(MPU9265::Register::INT_ENABLE, &one, 1);
-            if (writeRes != 1)
+            if (writeRes != 0)
             {
                 perror("Interrupt enable");
             }
@@ -93,42 +99,121 @@ bool MPU9265::init()
         perror("open");
         return false;
     }
+
+    return true;
 }
 
 
 bool MPU9265::setGyroResolution(MPU9265::GyroResolution gyroResolution)
 {
+    _gyroResolution = gyroResolution;
+
     uint8_t byte = static_cast<uint8_t>(gyroResolution);
 
-    return i2cWrite(MPU9265::Register::GYRO_CONFIG, &byte, 1);
+    return i2cWrite(MPU9265::Register::GYRO_CONFIG, &byte, 1) == 0;
 }
 
 
 bool MPU9265::setAccelResolution(MPU9265::AccelResolution accelResolution)
 {
+    _accelResolution = accelResolution;
+
     uint8_t byte = static_cast<uint8_t>(accelResolution);
 
-    return i2cWrite(MPU9265::Register::ACCEL_CONFIG, &byte, 1);
+    return i2cWrite(MPU9265::Register::ACCEL_CONFIG, &byte, 1) == 0;
+}
+
+
+void MPU9265::readGyro(float* gx, float* gy, float* gz)
+{
+    int16_t rawGyroX = 0;
+    i2cRead(MPU9265::Register::GYRO_XOUT_H, (uint8_t*) &rawGyroX, 2);
+    int16_t rawGyroY = 0;
+    i2cRead(MPU9265::Register::GYRO_YOUT_H, (uint8_t*) &rawGyroY, 2);
+    int16_t rawGyroZ = 0;
+    i2cRead(MPU9265::Register::GYRO_ZOUT_H, (uint8_t*) &rawGyroZ, 2);
+
+    *gx = toDps(rawGyroX);
+    *gy = toDps(rawGyroY);
+    *gz = -toDps(rawGyroZ);
+}
+
+
+void MPU9265::readAccel(float* ax, float* ay, float* az)
+{
+    int16_t rawAccelX = 0;
+    i2cRead(MPU9265::Register::ACCEL_XOUT_H, (uint8_t*) &rawAccelX, 2);
+    int16_t rawAccelY = 0;
+    i2cRead(MPU9265::Register::ACCEL_YOUT_H, (uint8_t*) &rawAccelY, 2);
+    int16_t rawAccelZ = 0;
+    i2cRead(MPU9265::Register::ACCEL_ZOUT_H, (uint8_t*) &rawAccelZ, 2);
+
+    *ax = toG(rawAccelX);
+    *ay = toG(rawAccelY);
+    *az = -toG(rawAccelZ);
 }
 
 
 int MPU9265::i2cWrite(MPU9265::Register reg, uint8_t* data, uint32_t data_len)
 {
-    uint8_t* buf = new uint8_t[data_len + 1];
-    memset(buf, 0x00, data_len + 1);
-
-    buf[0] = static_cast<uint8_t>(reg);
-
-    for (uint32_t i = 0; i < data_len; i++)
-    {
-        buf[i + 1] = data[i];
-    }
-
-    int writeResult = write(_fd, buf, data_len);
-    delete[] buf;
-
-    usleep(1000);
-    return writeResult;
+    return i2c_smbus_write_i2c_block_data(_fd, (uint8_t) reg, data_len, data);
 }
 
 
+int MPU9265::i2cRead(MPU9265::Register reg, uint8_t* data, uint32_t data_len)
+{
+    return i2c_smbus_read_i2c_block_data(_fd, (uint8_t) reg, data_len, data);
+}
+
+
+float MPU9265::toDps(int16_t gyroRaw)
+{
+    gyroRaw = big_endian(gyroRaw);
+    float gyroResolution = gyroResolutionValue(_gyroResolution);
+    return (static_cast<float>(gyroRaw) / static_cast<float>(std::numeric_limits<int16_t>::max())) * gyroResolution;
+}
+
+
+float MPU9265::toG(int16_t accelRaw)
+{
+    accelRaw = big_endian(accelRaw);
+    float accelResolution = accelResolutionValue(_accelResolution);
+    return (static_cast<float>(accelRaw) / static_cast<float>(std::numeric_limits<int16_t>::max())) * accelResolution;
+}
+
+
+float MPU9265::gyroResolutionValue(MPU9265::GyroResolution res)
+{
+    float _ret = 0.0f;
+    switch (res)
+    {
+        case MPU9265::GyroResolution::GYRO_250_DPS:  _ret = 250.f;  break;
+        case MPU9265::GyroResolution::GYRO_500_DPS:  _ret = 500.f;  break;
+        case MPU9265::GyroResolution::GYRO_1000_DPS: _ret = 1000.f; break;
+        case MPU9265::GyroResolution::GYRO_2000_DPS: _ret = 2000.f; break;
+    }
+
+    return _ret;
+}
+
+
+float MPU9265::accelResolutionValue(MPU9265::AccelResolution res)
+{
+    float _ret = 0.0f;
+    switch (res)
+    {
+        case MPU9265::AccelResolution::ACCEL_2G:  _ret = 2.f;  break;
+        case MPU9265::AccelResolution::ACCEL_4G:  _ret = 4.f;  break;
+        case MPU9265::AccelResolution::ACCEL_8G:  _ret = 8.f;  break;
+        case MPU9265::AccelResolution::ACCEL_16G: _ret = 16.f; break;
+    }
+
+    return _ret;
+}
+
+
+int16_t MPU9265::big_endian(int16_t little_endian)
+{
+    uint8_t* bytes = (uint8_t*) &little_endian;
+    return ((bytes[0] << 8) | bytes[1]);
+}

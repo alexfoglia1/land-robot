@@ -34,6 +34,8 @@ target_link_libraries(land-robot ${WIRINGPI_LIBRARIES})
 
 target_link_libraries(land-robot ${CMAKE_THREAD_LIBS_INIT})
 target_link_libraries(land-robot pthread)
+target_link_libraries(land-robot i2c)
+
 target_include_directories(land-robot PRIVATE ${CMAKE_SOURCE_DIR}/src/drivers)
 target_include_directories(land-robot PRIVATE ${CMAKE_SOURCE_DIR}/src/core)
 target_include_directories(land-robot PRIVATE ${CMAKE_SOURCE_DIR}/src/main)

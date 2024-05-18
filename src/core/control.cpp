@@ -25,7 +25,9 @@ void __attribute__((noreturn)) Control::loop()
         _throttleSetPoint = _comm->throttleData() & 0xFF;
         _gyroZSetPoint = _comm->turnData();
 
-        float gz = -_imu->rawData.gz / 131.f;
+        float gx, gy, gz;
+        _imu->readGyro(&gx, &gy, &gz);
+
         _gz = _gz * 0.75f + gz*0.25f;
         float pidOut = _pid.controller(_gyroZSetPoint, gz);
 

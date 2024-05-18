@@ -4,16 +4,6 @@
 #include <stdint.h>
 
 
-typedef struct
-{
-    int16_t ax;
-    int16_t ay;
-    int16_t az;
-    int16_t gx;
-    int16_t gy;
-    int16_t gz;
-} MPU9265RawData;
-
 class MPU9265
 {
 public:
@@ -58,13 +48,23 @@ public:
     bool init();
     bool setGyroResolution(MPU9265::GyroResolution gyroResolution);
     bool setAccelResolution(MPU9265::AccelResolution accelResolution);
+    void readGyro(float* gx, float* gy, float* gz);
+    void readAccel(float* ax, float* ay, float* az);
 
 private:
 
     int _fd;
-    MPU9265RawData _rawData;
+    GyroResolution _gyroResolution;
+    AccelResolution _accelResolution;
 
     int i2cWrite(MPU9265::Register reg, uint8_t* data, uint32_t data_len);
+    int i2cRead(MPU9265::Register reg, uint8_t* data, uint32_t data_len);
+
+    float toDps(int16_t gyroRaw);
+    float toG(int16_t accelRaw);
+    float gyroResolutionValue(MPU9265::GyroResolution res);
+    float accelResolutionValue(MPU9265::AccelResolution res);
+    int16_t big_endian(int16_t little_endian);
 
 };
 

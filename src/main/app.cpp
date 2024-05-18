@@ -13,9 +13,13 @@ int main(int argc, char** argv)
     Comm comm;
     MPU9265 mpu;
 
-    if (mpu.serialInit("/dev/ttyUSB0"))
+    if (!mpu.init())
     {
-        mpu.start();
+        printf("Warning : IMU not available\n");
+    }
+    else
+    {
+        printf("Found MPU9265 IMU\n");
     }
 
     if (comm.networkInit())
