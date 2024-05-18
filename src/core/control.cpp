@@ -3,8 +3,8 @@
 #include <unistd.h>
 #include <stdio.h>
 
-Control::Control(Comm* comm, Motors* motors, MPU9265* imu) :
-    _pid(3.0f, 0.0, 0.0, 0.0, 0.0, 255.0)
+Control::Control(Comm* comm, Motors* motors, MPU9265* imu, float dt_millis) :
+    _pid(3.0f, 0.0, 0.0, dt_millis, 255.0)
 {
     _comm = comm;
     _motors = motors;
@@ -14,6 +14,7 @@ Control::Control(Comm* comm, Motors* motors, MPU9265* imu) :
     _gz = 0;
     _throttleSetPoint = 0x00;
     _directionSetPoint = Direction::FORWARD;
+    _dt_millis = dt_millis;
 }
 
 
@@ -45,6 +46,6 @@ void __attribute__((noreturn)) Control::loop()
         printf("gyroZ(%f)\tpidOut(%f)\r\n", gz, pidOut);
 
 
-        usleep(5 * 1000);
+        usleep(_dt_millis * 1000);
     }
 }

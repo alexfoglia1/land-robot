@@ -26,7 +26,7 @@ int main(int argc, char** argv)
     {
         comm.start();
 
-        Control ctrl(&comm, &motors, &mpu);
+        Control ctrl(&comm, &motors, &mpu, 5);
         ctrl.loop();
     }
 }

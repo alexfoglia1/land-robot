@@ -21,7 +21,7 @@ class Control
 {
 public:
 
-    Control(Comm* comm, Motors* motors, MPU9265* imu);
+    Control(Comm* comm, Motors* motors, MPU9265* imu, float dt_millis);
 
     void loop();
 private:
@@ -34,6 +34,7 @@ private:
     float _gz;
     Direction _directionSetPoint;
     Pid _pid;
+    float _dt_millis;
 
 };
 

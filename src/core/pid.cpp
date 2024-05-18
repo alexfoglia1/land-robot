@@ -8,13 +8,12 @@ static float minMax(float val, float min, float max)
 }
 
 
-Pid::Pid(float kp, float ki, float kt, float ad, float bd, float sat)
+Pid::Pid(float kp, float ki, float kd, float kt, float sat)
 {
     _Kp = kp;
     _Ki = ki;
+    _Kd = kd;
     _Kt = kt;
-    _Ad = ad;
-    _Bd = bd;
     _Sat = sat;
 
     reset();
@@ -23,35 +22,35 @@ Pid::Pid(float kp, float ki, float kt, float ad, float bd, float sat)
 
 float Pid::controller(float ysp, float y)
 {
-    float ftmp;
+    float error = (ysp - y);
 
-    //  updates actual values
-    _ysp = ysp;
-    _y = y;
-    _error = _ysp - _y;
-    //
-    _P = _error * _Kp;
-    _D = _D * _Ad - (_y - _ykm1) * _Bd;
-    ftmp = _P + _I + _D;
-    _U = minMax(ftmp, -_Sat, _Sat);
-    //
-    _I += _error * _Ki;
-    _I += (_U - ftmp) * _Kt;
-    //
-    _ykm1 = _y;
-    //
-    return _U;
+    _derivative = (error - _error) / _Kt;
+    _integral += (error * _Kt);
+    _error = error;
+
+    float P = _Kp * _error;
+    float I = _Ki * _integral;
+    float D = _Kd * _derivative;
+
+    float U = P + I + D;
+
+    if (U < -_Sat)
+    {
+        U = -_Sat;
+    }
+    else if (U > _Sat)
+    {
+        U = _Sat;
+    }
+
+    return U;
 }
 
 
 void Pid::reset()
 {
-    _y = 0.0f;
-    _ykm1 = 0.0f;
-    _ysp = 0.0f;
     _error = 0.0f;
-    _P = 0.0f;
-    _I = 0.0f;
-    _D = 0.0f;
-    _U = 0.0f;
+    _error = 0.0f;
+    _integral = 0.0f;
+    _derivative = 0.0f;
 }

@@ -4,26 +4,20 @@
 class Pid
 {
 public:
-    Pid(float kp, float ki, float kt, float ad, float bd, float sat);
+    Pid(float kp, float ki, float kd, float kt, float sat);
 
     void reset();
     float controller(float ysp, float y);
 
 private:
-    float _ysp;
-    float _y;
-    float _ykm1;
     float _error;
-    float _P;
-    float _I;
-    float _D;
-    float _U;
+    float _derivative;
+    float _integral;
 
     float _Kp;
     float _Ki;
+    float _Kd;
     float _Kt;
-    float _Ad;
-    float _Bd;
     float _Sat;
 };
 
