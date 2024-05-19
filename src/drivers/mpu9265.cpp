@@ -17,6 +17,11 @@ extern "C"
 MPU9265::MPU9265()
 {
     _fd = -1;
+
+    _gx0 = 0;
+    _gy0 = 0;
+    _gz0 = 0;
+
     _gyroResolution = GyroResolution::GYRO_250_DPS;
     _accelResolution = AccelResolution::ACCEL_2G;
 }
@@ -133,9 +138,9 @@ void MPU9265::readGyro(float* gx, float* gy, float* gz)
     int16_t rawGyroZ = 0;
     i2cRead(MPU9265::Register::GYRO_ZOUT_H, (uint8_t*) &rawGyroZ, 2);
 
-    *gx = toDps(rawGyroX);
-    *gy = toDps(rawGyroY);
-    *gz = -toDps(rawGyroZ);
+    *gx = toDps(rawGyroX) - _gx0;
+    *gy = toDps(rawGyroY) - _gy0;
+    *gz = -toDps(rawGyroZ) - _gz0;
 }
 
 
@@ -151,6 +156,38 @@ void MPU9265::readAccel(float* ax, float* ay, float* az)
     *ax = toG(rawAccelX);
     *ay = toG(rawAccelY);
     *az = -toG(rawAccelZ);
+}
+
+
+void MPU9265::gyroByas()
+{
+    const int N = 1000;
+
+    _gx0 = 0.0f;
+    _gy0 = 0.0f;
+    _gz0 = 0.0f;
+
+    float gx0 = 0.0f;
+    float gy0 = 0.0f;
+    float gz0 = 0.0f;
+    for (int i = 0; i < N; i++)
+    {
+        float gx, gy, gz;
+        gx = 0.0f;
+        gy = 0.0f;
+        gz = 0.0f;
+
+        readGyro(&gx, &gy, &gz);
+        gx0 += gx;
+        gy0 += gy;
+        gz0 += gz;
+    }
+
+    _gx0 = gx0 / (float)N;
+    _gy0 = gy0 / (float)N;
+    _gz0 = gz0 / (float)N;
+
+    printf("gx0(%f)\tgy0(%f)\tgz0(%f)\n", _gx0, _gy0, _gz0);
 }
 
 

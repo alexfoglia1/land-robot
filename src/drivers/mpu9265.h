@@ -46,6 +46,7 @@ public:
     MPU9265();
 
     bool init();
+    void gyroByas();
     bool setGyroResolution(MPU9265::GyroResolution gyroResolution);
     bool setAccelResolution(MPU9265::AccelResolution accelResolution);
     void readGyro(float* gx, float* gy, float* gz);
@@ -56,6 +57,9 @@ private:
     int _fd;
     GyroResolution _gyroResolution;
     AccelResolution _accelResolution;
+    float _gx0;
+    float _gy0;
+    float _gz0;
 
     int i2cWrite(MPU9265::Register reg, uint8_t* data, uint32_t data_len);
     int i2cRead(MPU9265::Register reg, uint8_t* data, uint32_t data_len);

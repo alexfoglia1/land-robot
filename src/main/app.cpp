@@ -20,6 +20,7 @@ int main(int argc, char** argv)
     else
     {
         printf("Found MPU9265 IMU\n");
+        mpu.gyroByas();
     }
 
     if (comm.networkInit())
