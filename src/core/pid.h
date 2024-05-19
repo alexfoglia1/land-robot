@@ -19,6 +19,7 @@ private:
     float _Kd;
     float _Kt;
     float _Sat;
+    bool _satFlag;
 };
 
 #endif //PID_H
