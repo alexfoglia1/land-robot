@@ -18,6 +18,10 @@ public:
     void stopMotors();
     void forward();
     void backward();
+    void forwardRight();
+    void backwardRight();
+    void forwardLeft();
+    void backwardLeft();
     void setSpeed(uint8_t leftSpeed, uint8_t rightSpeed);
 
 private:

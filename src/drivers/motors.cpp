@@ -55,6 +55,30 @@ void Motors::backward()
     digitalWrite(MOTOR_LEFT_DIR2, HIGH);
 }
 
+void Motors::forwardRight()
+{
+    digitalWrite(MOTOR_RIGHT_DIR1, HIGH);
+    digitalWrite(MOTOR_RIGHT_DIR2, LOW);
+}
+
+void Motors::backwardRight()
+{
+    digitalWrite(MOTOR_RIGHT_DIR1, LOW);
+    digitalWrite(MOTOR_RIGHT_DIR2, HIGH);
+}
+
+void Motors::forwardLeft()
+{
+    digitalWrite(MOTOR_LEFT_DIR1, HIGH);
+    digitalWrite(MOTOR_LEFT_DIR2, LOW);
+}
+
+void Motors::backwardLeft()
+{
+    digitalWrite(MOTOR_LEFT_DIR1, LOW);
+    digitalWrite(MOTOR_LEFT_DIR2, HIGH);
+}
+
 
 void Motors::setSpeed(uint8_t leftSpeed, uint8_t rightSpeed)
 {

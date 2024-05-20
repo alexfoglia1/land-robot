@@ -20,9 +20,10 @@ enum class MsgType : uint8_t
 
 typedef struct
 {
-    uint8_t msgId;
-    MsgType type;
-    uint16_t data;
+    int16_t xAxis;
+    int16_t yAxis;
+    int16_t throttle;
+    uint16_t checksum;
 } CtrlMessage;
 
 

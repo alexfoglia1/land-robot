@@ -16,10 +16,10 @@ void* task(void* arg)
         if (recvLen > 0)
         {
             CtrlMessage* rxMessage = reinterpret_cast<CtrlMessage*>(buf);
-            if (rxMessage->msgId == COMMAND_MSG_ID)
-            {
+            //if (rxMessage->msgId == COMMAND_MSG_ID)
+            //{
                 comm->handleMessageRx(rxMessage);
-            }
+            //}
         }
     }
 }
@@ -53,6 +53,7 @@ bool Comm::networkInit()
     }
     else
     {
+        printf("Waiting for data on port %d\n", SERVER_PORT);
         _init = true;
     }
 
@@ -74,20 +75,18 @@ void Comm::start()
 
 void Comm::handleMessageRx(CtrlMessage *message)
 {
-    switch(message->type)
+    if (message->throttle < 0)
     {
-    case MsgType::THROTTLE:
-        _throttleData = message->data;
-        _backwardData = false;
-        break;
-    case MsgType::BREAK:
-        _throttleData = message->data;
         _backwardData = true;
-        break;
-    case MsgType::TURN:
-        _turnData = static_cast<int16_t>(message->data);
-        break;
+        _throttleData = -message->throttle;
     }
+    else
+    {
+        _backwardData = false;
+        _throttleData = message->throttle;
+    }
+
+    _turnData = message->xAxis;
 }
 
 

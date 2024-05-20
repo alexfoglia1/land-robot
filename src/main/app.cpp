@@ -4,6 +4,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 
 int main(int argc, char** argv)
 {
@@ -25,9 +26,17 @@ int main(int argc, char** argv)
 
     if (comm.networkInit())
     {
-        comm.start();
+        int pid = 1;//fork();
+        if (pid == 0)
+        {
+            system("raspivid -o - -t 0 -vf -w 800 -h 600 -fps 12 | cvlc -vvv stream:///dev/stdin --sout '#rtp{sdp=rtsp://:8080/}' :demux=h264");
+        }
+        else
+        {
+            comm.start();
 
-        Control ctrl(&comm, &motors, &mpu, 5);
-        ctrl.loop();
+            Control ctrl(&comm, &motors, &mpu, 5);
+            ctrl.loop();
+        }
     }
 }
