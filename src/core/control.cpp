@@ -3,18 +3,21 @@
 #include <unistd.h>
 #include <stdio.h>
 
-Control::Control(Comm* comm, Motors* motors, MPU9265* imu, float dt_millis) :
+Control::Control(Comm* comm, Motors* motors, MPU9265* imu, Servo* servo, float dt_millis) :
     _pid(2.5f, 0.00f, 0.0f, dt_millis, 255.0f)
 {
     _comm = comm;
     _motors = motors;
     _imu = imu;
+    _servo = servo;
 
     _gyroZSetPoint = 0;
     _gz = 0;
     _throttleSetPoint = 0x00;
     _directionSetPoint = Direction::FORWARD;
     _dt_millis = dt_millis;
+
+    _lastDelayMicroseconds = 0;
 }
 
 
@@ -65,9 +68,20 @@ void __attribute__((noreturn)) Control::loop()
         }
 
 
-        printf("sp + pid(%f), sp - pid(%f), leftCmd(%d), rightCmd(%d)\n", _throttleSetPoint + pidOut, _throttleSetPoint - pidOut, leftCmd, rightCmd);
+        //printf("sp + pid(%f), sp - pid(%f), leftCmd(%d), rightCmd(%d)\n", _throttleSetPoint + pidOut, _throttleSetPoint - pidOut, leftCmd, rightCmd);
 
         _motors->setSpeed(leftCmd & 0xFF, rightCmd & 0xFF);
+
+        if (_lastDelayMicroseconds != _comm->servoData())
+        {
+            _lastDelayMicroseconds = _comm->servoData();
+            printf("servoData(%d)\n", _lastDelayMicroseconds);
+            _servo->writeMicroseconds(SATURATE(_lastDelayMicroseconds,
+                                               MIN_DELAY_MICROSECONDS,
+                                               MAX_DELAY_MICROSECONDS));
+
+        }
+
 
         //printf("gyroZ(%f)\tpidOut(%f)\r\n", gz, pidOut);
 

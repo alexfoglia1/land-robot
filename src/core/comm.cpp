@@ -1,8 +1,11 @@
 #include "comm.h"
 
+#include <wiringSerial.h>
 #include <string.h>
 #include <stdio.h>
+#include <unistd.h>
 #include <pthread.h>
+
 
 void* task(void* arg)
 {
@@ -25,15 +28,33 @@ void* task(void* arg)
 }
 
 
+void* uartTask(void* arg)
+{
+    Comm* comm = reinterpret_cast<Comm*>(arg);
+
+    uint8_t byteIn;
+    while (1)
+    {
+         printf("Wait uart...\n");
+         byteIn = serialGetchar(comm->_serialFd);
+         comm->handleUartByteRx(byteIn);
+    }
+
+}
+
+
 Comm::Comm()
 {
     _serverSocket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
     memset(&_addr, 0x00, sizeof(struct sockaddr_in));
     _init = false;
     _started = false;
+    _uartInit = false;
+    _uartRxLen = 0;
 
     _throttleData = 0;
     _turnData = 0;
+    _servoData = 1500;
     _backwardData = false;
 }
 
@@ -61,20 +82,40 @@ bool Comm::networkInit()
 }
 
 
+bool Comm::serialInit()
+{
+    _serialFd = serialOpen("/dev/ttyAMA3", 115200);
+    _uartInit = _serialFd > 0;
+    return _uartInit;
+}
+
+
 void Comm::start()
 {
     if (_init && !_started)
     {
-        pthread_t thread;
+        pthread_t thread, uartThread;
         pthread_create(&thread, nullptr, *task, reinterpret_cast<void*>(this));
 
+        if (_uartInit)
+        {
+            pthread_create(&uartThread, nullptr, *uartTask, reinterpret_cast<void*>(this));
+        }
         _started = true;
     }
+
+
 }
 
 
 void Comm::handleMessageRx(CtrlMessage *message)
 {
+    //printf("message->xAxis(%d)\n", message->xAxis);
+    //printf("message->yAxis(%d)\n", message->yAxis);
+    //printf("message->throttle(%d)\n", message->throttle);
+    //printf("message->servo(%d)\n", message->servo);
+    //printf("message->checksum(%d)\n", message->checksum);
+
     if (message->throttle < 0)
     {
         _backwardData = true;
@@ -87,6 +128,41 @@ void Comm::handleMessageRx(CtrlMessage *message)
     }
 
     _turnData = message->xAxis;
+    _servoData = message->servo;
+}
+
+
+void Comm::handleUartByteRx(uint8_t byteRx)
+{
+    switch (_uartStatus)
+    {
+        case UartStatus::WAIT_SYNC:
+        {
+            if (byteRx == 0xFF)
+            {
+                _uartStatus = UartStatus::WAIT_MESSAGE;
+
+                _uartRxLen = 0;
+                memset(_uartBuf, 0x00, sizeof(CtrlMessage));
+                printf("sync\n");
+            }
+        }
+        break;
+        case UartStatus::WAIT_MESSAGE:
+        {
+            _uartBuf[_uartRxLen] = byteRx;
+            _uartRxLen += 1;
+
+            printf("rxByte(%hhd)\n", byteRx);
+
+            if (_uartRxLen == sizeof(CtrlMessage))
+            {
+                handleMessageRx(reinterpret_cast<CtrlMessage*>(_uartBuf));
+                _uartStatus = UartStatus::WAIT_SYNC;
+            }
+        }
+        break;
+    }
 }
 
 
@@ -107,4 +183,9 @@ int16_t Comm::turnData()
     return _turnData;
 }
 
+
+uint16_t Comm::servoData()
+{
+    return _servoData;
+}
 

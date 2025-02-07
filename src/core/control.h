@@ -5,6 +5,7 @@
 #include "mpu9265.h"
 #include "motors.h"
 #include "pid.h"
+#include "servo.h"
 
 #include <stdint.h>
 
@@ -21,7 +22,7 @@ class Control
 {
 public:
 
-    Control(Comm* comm, Motors* motors, MPU9265* imu, float dt_millis);
+    Control(Comm* comm, Motors* motors, MPU9265* imu, Servo* servo, float dt_millis);
 
     void loop();
 private:
@@ -29,12 +30,14 @@ private:
     Comm* _comm;
     Motors* _motors;
     MPU9265* _imu;
+    Servo* _servo;
     uint8_t _throttleSetPoint;
     int16_t _gyroZSetPoint;
     float _gz;
     Direction _directionSetPoint;
     Pid _pid;
     float _dt_millis;
+    uint16_t _lastDelayMicroseconds;
 
 };
 

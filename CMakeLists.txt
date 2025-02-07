@@ -11,6 +11,9 @@ add_executable(
 land-robot
 ${CMAKE_SOURCE_DIR}/src/drivers/motors.h
 ${CMAKE_SOURCE_DIR}/src/drivers/mpu9265.h
+${CMAKE_SOURCE_DIR}/src/drivers/servo.h
+${CMAKE_SOURCE_DIR}/src/drivers/ardu-servo.h
+${CMAKE_SOURCE_DIR}/src/drivers/raspi-servo.h
 
 ${CMAKE_SOURCE_DIR}/src/core/control.h
 ${CMAKE_SOURCE_DIR}/src/core/pid.h
@@ -21,6 +24,8 @@ ${CMAKE_SOURCE_DIR}/src/main/app.h
 
 ${CMAKE_SOURCE_DIR}/src/drivers/motors.cpp
 ${CMAKE_SOURCE_DIR}/src/drivers/mpu9265.cpp
+${CMAKE_SOURCE_DIR}/src/drivers/ardu-servo.cpp
+${CMAKE_SOURCE_DIR}/src/drivers/raspi-servo.cpp
 
 ${CMAKE_SOURCE_DIR}/src/core/control.cpp
 ${CMAKE_SOURCE_DIR}/src/core/pid.cpp

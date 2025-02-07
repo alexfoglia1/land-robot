@@ -6,8 +6,6 @@
 
 Motors::Motors()
 {
-    wiringPiSetup();
-
     pinMode(MOTOR_RIGHT_SPEED, OUTPUT);
     pinMode(MOTOR_RIGHT_DIR1, OUTPUT);
     pinMode(MOTOR_RIGHT_DIR2, OUTPUT);
