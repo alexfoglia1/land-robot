@@ -24,7 +24,7 @@ void* writeMicrosecondsTask(void* params)
     float dc = totalRiseTime_s / PERIOD_S;
     int toWrite = dc * _range;
 
-    printf("delayMicroseconds(%d), totalRiseTime(%f s), dc(%f), toWrite(%d)\n", delayUs, totalRiseTime_s, dc, toWrite);
+    //printf("delayMicroseconds(%d), totalRiseTime(%f s), dc(%f), toWrite(%d)\n", delayUs, totalRiseTime_s, dc, toWrite);
     softPwmWrite(SERVO_PIN, toWrite);
 
     usleep(0.25 * 1e6);

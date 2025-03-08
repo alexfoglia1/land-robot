@@ -7,7 +7,7 @@
 
 #include "servo.h"
 
-#define SERVO_BAUD 38400
+#define SERVO_BAUD 115200
 
 #define RASPI_SERVO_SYNC_BYTE 0xFF
 

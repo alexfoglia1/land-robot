@@ -144,7 +144,7 @@ void Comm::handleUartByteRx(uint8_t byteRx)
 
                 _uartRxLen = 0;
                 memset(_uartBuf, 0x00, sizeof(CtrlMessage));
-                printf("sync\n");
+                //printf("sync\n");
             }
         }
         break;
@@ -153,7 +153,7 @@ void Comm::handleUartByteRx(uint8_t byteRx)
             _uartBuf[_uartRxLen] = byteRx;
             _uartRxLen += 1;
 
-            printf("rxByte(%hhd)\n", byteRx);
+            //printf("rxByte(%hhd)\n", byteRx);
 
             if (_uartRxLen == sizeof(CtrlMessage))
             {

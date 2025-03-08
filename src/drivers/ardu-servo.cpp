@@ -27,7 +27,8 @@ void ArduServo::readDir(const char* path)
         {
             std::string fileName(ent->d_name);
             if ( (fileName.rfind("ttyUSB", 0) == 0) ||
-                 (fileName.rfind("ttyACM", 0) == 0))
+                 (fileName.rfind("ttyACM", 0) == 0) ||
+                 (fileName.rfind("ttyAMA", 0) == 0) )
             {
                 _usbDevices.push_back(std::string(path) + fileName);
             }

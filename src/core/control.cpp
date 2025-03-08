@@ -17,18 +17,21 @@ Control::Control(Comm* comm, Motors* motors, MPU9265* imu, Servo* servo, float d
     _directionSetPoint = Direction::FORWARD;
     _dt_millis = dt_millis;
 
-    _lastDelayMicroseconds = 0;
+    _lastDelayMicroseconds = 1000;
 }
 
 
 void __attribute__((noreturn)) Control::loop()
 {
+//    int cnt = 0;
     while (1)
     {
         _directionSetPoint = _comm->backwardData() ? Direction::BACKWARD : Direction::FORWARD;
         _throttleSetPoint = _comm->throttleData() & 0xFF;
         _gyroZSetPoint = _comm->turnData();
 
+
+	
         float gx, gy, gz;
         _imu->readGyro(&gx, &gy, &gz);
 
@@ -72,19 +75,20 @@ void __attribute__((noreturn)) Control::loop()
 
         _motors->setSpeed(leftCmd & 0xFF, rightCmd & 0xFF);
 
-        if (_lastDelayMicroseconds != _comm->servoData())
-        {
+//        if (_lastDelayMicroseconds != _comm->servoData())
+//        {
             _lastDelayMicroseconds = _comm->servoData();
-            printf("servoData(%d)\n", _lastDelayMicroseconds);
+//            printf("servoData(%d)\n", _lastDelayMicroseconds);
             _servo->writeMicroseconds(SATURATE(_lastDelayMicroseconds,
                                                MIN_DELAY_MICROSECONDS,
                                                MAX_DELAY_MICROSECONDS));
-
-        }
+//        }
 
 
         //printf("gyroZ(%f)\tpidOut(%f)\r\n", gz, pidOut);
-
+       //if (++cnt % 10 == 0)
+       //  _lastDelayMicroseconds += 1;
+      
         usleep(_dt_millis * 1000);
     }
 }
