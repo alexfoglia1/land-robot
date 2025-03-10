@@ -1,6 +1,8 @@
 #include "app.h"
 #include "control.h"
 #include "mpu9265.h"
+#include "comm.h"
+#include "telemetry.h"
 #include "ardu-servo.h"
 
 #include <stdio.h>
@@ -19,6 +21,7 @@ int main(int argc, char** argv)
     Comm comm;
     MPU9265 mpu;
     ArduServo servo;
+    Telemetry* telemetry;
     servo.init();
     servo.writeMicroseconds(1500);
 
@@ -53,8 +56,10 @@ int main(int argc, char** argv)
         else
         {
             comm.start();
-
             Control ctrl(&comm, &motors, &mpu, &servo, 5);
+            telemetry = new Telemetry(&comm, &ctrl);
+            telemetry->start();
+
             ctrl.loop();
         }
     }

@@ -134,7 +134,13 @@ bool ArduServo::testDevice(int fd)
 
 void ArduServo::servoTx(raspi_servo_msg_t* msg)
 {
-    serialPuts(_servoFd, reinterpret_cast<char*>(msg));
+    unsigned char* pMsg = reinterpret_cast<unsigned char*>(msg);
+
+    size_t i = 0;
+    for (i = 0; i < sizeof(raspi_servo_msg_t); i++)
+    {
+        serialPutchar(_servoFd, pMsg[i]);
+    }
 }
 
 

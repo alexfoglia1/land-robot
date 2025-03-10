@@ -7,6 +7,7 @@
 #include <pthread.h>
 
 
+
 void* task(void* arg)
 {
     Comm* comm = reinterpret_cast<Comm*>(arg);
@@ -15,14 +16,28 @@ void* task(void* arg)
 
     while (1)
     {
-        ssize_t recvLen = recv(comm->_serverSocket, buf, BUFLEN, 0);
+        struct sockaddr_in cliAddr;
+        socklen_t cliLen;
+        ssize_t recvLen = recvfrom(comm->_serverSocket, buf, BUFLEN, 0, reinterpret_cast<struct sockaddr*>(&cliAddr), &cliLen);
         if (recvLen > 0)
         {
-            CtrlMessage* rxMessage = reinterpret_cast<CtrlMessage*>(buf);
-            //if (rxMessage->msgId == COMMAND_MSG_ID)
-            //{
-                comm->handleMessageRx(rxMessage);
-            //}
+            uint8_t msgId = static_cast<uint8_t>(buf[0]);
+            CtrlMessage* rxCommand = reinterpret_cast<CtrlMessage*>(buf + 1);
+            TelemetryHeader* rxTelemetry = reinterpret_cast<TelemetryHeader*>(buf + 1);
+            switch (msgId)
+            {
+                case CTRL_MSG_ID:
+                    comm->handleMessageRx(rxCommand);
+                break;
+                case TLMT_MSG_ID:
+                    comm->handleTelemetryRequest(rxTelemetry, cliAddr.sin_addr.s_addr, cliAddr.sin_port, cliLen);
+                break;
+                case EMRG_MSG_ID:
+                    comm->toggleEmergencyStop();
+                break;
+                default:
+                break;
+            }
         }
     }
 }
@@ -56,6 +71,14 @@ Comm::Comm()
     _turnData = 0;
     _servoData = 1500;
     _backwardData = false;
+    _rxTelemetryRequest = false;
+    _telemetryAddress = INADDR_ANY;
+    _telemetryPort = 0;
+    _telemetryLen = 0;
+    _isEmergencyStop = false;
+
+    sem_init(&_telemetrySemaphore, 0, 0);
+
 }
 
 
@@ -110,12 +133,6 @@ void Comm::start()
 
 void Comm::handleMessageRx(CtrlMessage *message)
 {
-    //printf("message->xAxis(%d)\n", message->xAxis);
-    //printf("message->yAxis(%d)\n", message->yAxis);
-    //printf("message->throttle(%d)\n", message->throttle);
-    //printf("message->servo(%d)\n", message->servo);
-    //printf("message->checksum(%d)\n", message->checksum);
-
     if (message->throttle < 0)
     {
         _backwardData = true;
@@ -129,6 +146,45 @@ void Comm::handleMessageRx(CtrlMessage *message)
 
     _turnData = message->xAxis;
     _servoData = message->servo;
+}
+
+
+void Comm::handleTelemetryRequest(TelemetryHeader* headerRx, in_addr_t cliAddr, in_port_t cliPort, socklen_t cliLen)
+{
+    if (headerRx->byte0.Bits.zero == 0 && headerRx->byte1.Bits.zero == 0)
+    {
+        memmove(&_rxTelemetryHeader, headerRx, sizeof(TelemetryHeader));
+        _telemetryAddress = cliAddr;
+        _telemetryPort = cliPort;
+        _telemetryLen = cliLen;
+        _rxTelemetryRequest = true;
+        sem_post(&_telemetrySemaphore);
+    }
+}
+
+
+void Comm::waitTelemetry()
+{
+    sem_wait(&_telemetrySemaphore);
+}
+
+
+ssize_t Comm::sendTelemetry(char *data, size_t len)
+{
+    struct sockaddr_in daddr;
+    memset(&daddr, 0x00, sizeof(struct sockaddr_in));
+
+    daddr.sin_family = AF_INET;
+    daddr.sin_addr.s_addr = _telemetryAddress;
+    daddr.sin_port = _telemetryPort;
+
+    return sendto(_serverSocket, reinterpret_cast<const void*>(data), len, 0, reinterpret_cast<struct sockaddr*>(&daddr), _telemetryLen);
+}
+
+
+bool Comm::hasPendingTelemetryRequests()
+{
+    return _rxTelemetryRequest;
 }
 
 
@@ -184,8 +240,24 @@ int16_t Comm::turnData()
 }
 
 
+TelemetryHeader Comm::getTelemetryRequest()
+{
+    return _rxTelemetryHeader;
+}
+
 uint16_t Comm::servoData()
 {
     return _servoData;
 }
 
+
+void Comm::toggleEmergencyStop()
+{
+    _isEmergencyStop = !_isEmergencyStop;
+}
+
+
+bool Comm::isEmergencyStop()
+{
+    return _isEmergencyStop;
+}

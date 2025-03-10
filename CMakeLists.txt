@@ -16,6 +16,7 @@ ${CMAKE_SOURCE_DIR}/src/drivers/ardu-servo.h
 ${CMAKE_SOURCE_DIR}/src/drivers/raspi-servo.h
 
 ${CMAKE_SOURCE_DIR}/src/core/control.h
+${CMAKE_SOURCE_DIR}/src/core/telemetry.h
 ${CMAKE_SOURCE_DIR}/src/core/pid.h
 ${CMAKE_SOURCE_DIR}/src/core/comm.h
 
@@ -30,6 +31,7 @@ ${CMAKE_SOURCE_DIR}/src/drivers/raspi-servo.cpp
 ${CMAKE_SOURCE_DIR}/src/core/control.cpp
 ${CMAKE_SOURCE_DIR}/src/core/pid.cpp
 ${CMAKE_SOURCE_DIR}/src/core/comm.cpp
+${CMAKE_SOURCE_DIR}/src/core/telemetry.cpp
 
 ${CMAKE_SOURCE_DIR}/src/main/app.cpp
 )

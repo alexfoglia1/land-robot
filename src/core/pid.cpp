@@ -46,23 +46,47 @@ float Pid::controller(float ysp, float y)
 
     _error = error;
 
-    float P = _Kp * _error;
-    float I = _Ki * _integral;
-    float D = _Kd * _derivative;
+    _P = _Kp * _error;
+    _I = _Ki * _integral;
+    _D = _Kd * _derivative;
 
-    float U = P + I + D;
+    _U = _P + _I + _D;
 
-    _satFlag = minMax(&U, -_Sat, _Sat);
+    _satFlag = minMax(&_U, -_Sat, _Sat);
 
-    return U;
+    return _U;
 }
 
 
 void Pid::reset()
 {
     _error = 0.0f;
-    _error = 0.0f;
     _integral = 0.0f;
     _derivative = 0.0f;
+    _P = 0.0f;
+    _I = 0.0f;
+    _D = 0.0f;
+    _U = 0.0f;
     _satFlag = false;
+}
+
+
+float Pid::getP()
+{
+    return _P;
+}
+
+float Pid::getI()
+{
+    return _I;
+}
+
+float Pid::getD()
+{
+    return _D;
+}
+
+float Pid::getU()
+{
+    return _U;
 }

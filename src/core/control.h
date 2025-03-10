@@ -17,11 +17,12 @@ enum class Direction : uint8_t
     BACKWARD
 };
 
+class Telemetry;
 
 class Control
 {
 public:
-
+    friend class Telemetry;
     Control(Comm* comm, Motors* motors, MPU9265* imu, Servo* servo, float dt_millis);
 
     void loop();
@@ -38,6 +39,8 @@ private:
     Pid _pid;
     float _dt_millis;
     uint16_t _lastDelayMicroseconds;
+    uint16_t _leftCmd;
+    uint16_t _rightCmd;
 
 };
 
