@@ -45,22 +45,25 @@ int main(int argc, char** argv)
         printf("Cannot open UART\n");
     }
 #endif
-    if (comm.networkInit())
+    
+    if (fork() == 0)
     {
-        int pid = fork();
-        if (pid == 0)
-        {
-	    //exit(0);
-            system("gst-launch-1.0 -v v4l2src device=/dev/video0 ! videoconvert    ! video/x-raw,format=I420,width=640,height=480,framerate=30/1 ! videoflip method=rotate-180 ! x264enc tune=zerolatency bitrate=800 speed-preset=superfast ! rtph264pay ! udpsink host=192.168.1.8  port=5000");
-        }
-        else
-        {
-            comm.start();
-            Control ctrl(&comm, &motors, &mpu, &servo, 5);
-            telemetry = new Telemetry(&comm, &ctrl);
-            telemetry->start();
-
-            ctrl.loop();
-        }
+#ifdef __HOTSPOT__
+            system("gst-launch-1.0 -v v4l2src device=/dev/video0 ! videoconvert    ! video/x-raw,format=I420,width=640,height=480,framerate=30/1 ! videoflip method=rotate-180 ! x264enc tune=zerolatency bitrate=800 speed-preset=superfast ! rtph264pay ! udpsink host=172.20.10.8  port=5000");
+#else
+            system("gst-launch-1.0 -v v4l2src device=/dev/video0 ! videoconvert    ! video/x-raw,format=I420,width=640,height=480,framerate=30/1 ! videoflip method=rotate-180 ! x264enc tune=zerolatency bitrate=800 speed-preset=superfast ! rtph264pay ! udpsink host=192.168.1.5  port=5000");
+#endif
     }
+    else
+    {
+        comm.networkInit();
+        comm.start();
+        Control ctrl(&comm, &motors, &mpu, &servo, 5);
+        telemetry = new Telemetry(&comm, &ctrl);
+        telemetry->start();
+
+        ctrl.loop();
+    }
+
+    return 0;
 }
