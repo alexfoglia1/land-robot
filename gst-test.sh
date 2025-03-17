@@ -1,0 +1,1 @@
+gst-launch-1.0 -v v4l2src device=$1 ! videoconvert    ! video/x-raw,format=I420,width=640,height=480,framerate=30/1 ! videoflip method=rotate-180 ! x264enc tune=zerolatency bitrate=800 speed-preset=superfast ! rtph264pay ! udpsink host=192.168.1.5  port=5000

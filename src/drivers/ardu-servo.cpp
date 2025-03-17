@@ -180,6 +180,7 @@ void ArduServo::writeMicroseconds(uint16_t delayUs)
 {
     raspi_servo_msg_t msg;
     msg.sync = RASPI_SERVO_SYNC_BYTE;
+    msg.id = 0x00;
     //printf("delayUs(%d)\n", delayUs);
     msg.delay_microseconds = delayUs;
 

@@ -16,6 +16,7 @@
 typedef struct
 {
     uint8_t sync;
+    uint8_t id;
     uint16_t delay_microseconds;
 } __attribute__((packed)) raspi_servo_msg_t;
 
