@@ -96,8 +96,8 @@ void Telemetry::serveRequest()
         }
         if (answer.header.byte1.Bits.servo)
         {
-            uint16_t servo = _monitored->_lastDelayMicroseconds;
-            pushToPayload(answer.payload, &payloadIndex, reinterpret_cast<const uint8_t*>(&servo), sizeof(uint16_t));
+            uint32_t servo = _monitored->_lastDelayMicroseconds;
+            pushToPayload(answer.payload, &payloadIndex, reinterpret_cast<const uint8_t*>(&servo), sizeof(uint32_t));
         }
 
         _comm->sendTelemetry(reinterpret_cast<char*>(&answer), sizeof(TelemetryHeader) + payloadIndex);

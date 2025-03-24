@@ -10,16 +10,47 @@ Control::Control(Comm* comm, Motors* motors, MPU9265* imu, Servo* servo, float d
     _motors = motors;
     _imu = imu;
     _servo = servo;
+    _servoMode = ServoMode::VELOCITY;
 
     _gyroZSetPoint = 0;
     _gz = 0;
     _throttleSetPoint = 0x00;
     _directionSetPoint = Direction::FORWARD;
     _dt_millis = dt_millis;
+    _lastDelayMicroseconds = 0;
 
-    _lastDelayMicroseconds = 1500;
     _leftCmd = 0;
     _rightCmd = 0;
+}
+
+
+void Control::servoLoop()
+{
+        _servoMode = static_cast<ServoMode>(_comm->servoMode() & 0x01);
+        uint32_t lastDelayMicroseconds = _comm->servoData();
+        static uint16_t servoAzi = (MAX_DELAY_MICROSECONDS + MIN_DELAY_MICROSECONDS)/2;
+        static uint16_t servoEle = (MAX_DELAY_MICROSECONDS + MIN_DELAY_MICROSECONDS)/2;
+
+        uint16_t velAzi = lastDelayMicroseconds >> 16;
+        uint16_t velEle = lastDelayMicroseconds & 0xFFFF;
+
+        if (_servoMode == ServoMode::VELOCITY)
+        {
+            servoAzi += 4.0 * _dt_millis / 1000.f * (velAzi - ((MAX_DELAY_MICROSECONDS + MIN_DELAY_MICROSECONDS)/2));
+            servoEle += 4.0 * _dt_millis / 1000.f * (velEle - ((MAX_DELAY_MICROSECONDS + MIN_DELAY_MICROSECONDS)/2));
+        }
+        else
+        {
+            servoAzi = velAzi;
+            servoEle = velEle;
+        }
+
+        servoAzi = SATURATE(servoAzi, MIN_DELAY_MICROSECONDS, MAX_DELAY_MICROSECONDS);
+        servoEle = SATURATE(servoEle, MIN_DELAY_MICROSECONDS, MAX_DELAY_MICROSECONDS);
+
+        _servo->writeMicroseconds(servoAzi, servoEle);
+
+        _lastDelayMicroseconds = servoAzi << 16 | servoEle;
 }
 
 
@@ -36,7 +67,6 @@ void __attribute__((noreturn)) Control::loop()
             _directionSetPoint = Direction::FORWARD;
             _leftCmd = 0;
             _rightCmd = 0;
-            _lastDelayMicroseconds = 1500;
         }
         else
         {
@@ -82,14 +112,11 @@ void __attribute__((noreturn)) Control::loop()
                 _rightCmd = SATURATE(_throttleSetPoint - pidOut, 0x00, 0xFF);
             }
         
-            _lastDelayMicroseconds = _comm->servoData();
         }
 
         _motors->setSpeed(_leftCmd & 0xFF, _rightCmd & 0xFF);
 
-        _servo->writeMicroseconds(SATURATE(_lastDelayMicroseconds,
-                                            MIN_DELAY_MICROSECONDS,
-                                            MAX_DELAY_MICROSECONDS));
+        servoLoop();
 
         usleep(_dt_millis * 1000);
     }

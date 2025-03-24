@@ -176,14 +176,14 @@ bool ArduServo::init()
 }
 
 
-void ArduServo::writeMicroseconds(uint16_t delayUs)
+void ArduServo::writeMicroseconds(uint16_t delayUsAzi, uint16_t delayUsEle)
 {
+    //printf("Delay azi(%d), Delay ele(%d)\n", delayUsAzi, delayUsEle);
     raspi_servo_msg_t msg;
     msg.sync = RASPI_SERVO_SYNC_BYTE;
-    msg.id = 0x00;
-    //printf("delayUs(%d)\n", delayUs);
-    msg.delay_microseconds = delayUs;
-
+    msg.delay_microseconds_azi = delayUsAzi;
+    msg.delay_microseconds_ele = delayUsEle;
+    
     servoTx(&msg);
 }
 

@@ -17,11 +17,11 @@
 
 typedef struct
 {
-    int16_t xAxis;
-    int16_t yAxis;
+    int16_t gyroZ;
     int16_t throttle;
-    uint16_t servo;
-    uint16_t checksum;
+    uint16_t servo_azi;
+    uint16_t servo_ele;
+    uint16_t servo_mode;
 } __attribute__((packed)) CtrlMessage;
 
 
@@ -97,7 +97,8 @@ public:
 
     bool backwardData();
     uint16_t throttleData();
-    uint16_t servoData();
+    uint32_t servoData();
+    uint16_t servoMode();
     int16_t turnData();
     TelemetryHeader getTelemetryRequest();
 
@@ -119,11 +120,12 @@ private:
     UartStatus _uartStatus;
     int _uartRxLen;
     uint8_t _uartBuf[10];
-
+    uint16_t _servoMode;
     bool _rxTelemetryRequest;
     bool _backwardData;
     uint16_t _throttleData;
-    uint16_t _servoData;
+    uint16_t _servoAziData;
+    uint16_t _servoEleData;
     int16_t _turnData;
 };
 

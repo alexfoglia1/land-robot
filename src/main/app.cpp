@@ -23,7 +23,7 @@ int main(int argc, char** argv)
     ArduServo servo;
     Telemetry* telemetry;
     servo.init();
-    servo.writeMicroseconds(1500);
+    servo.writeMicroseconds(1500, 1500);
 
     if (!mpu.init())
     {
@@ -49,9 +49,9 @@ int main(int argc, char** argv)
     if (fork() == 0)
     {
 #ifdef __HOTSPOT__
-            system("gst-launch-1.0 -v v4l2src device=/dev/video0 ! videoconvert    ! video/x-raw,format=I420,width=640,height=480,framerate=30/1 ! videoflip method=rotate-180 ! x264enc tune=zerolatency bitrate=800 speed-preset=superfast ! rtph264pay ! udpsink host=172.20.10.8  port=5000");
+            system("gst-launch-1.0 -v v4l2src device=/dev/video0 ! videoconvert    ! video/x-raw,format=I420,width=640,height=480,framerate=30/1 ! videoflip method=rotate-180 ! x264enc tune=zerolatency bitrate=800 speed-preset=superfast ! rtph264pay ! udpsink host=172.20.10.8  port=5000 > /dev/null");
 #else
-            system("gst-launch-1.0 -v v4l2src device=/dev/video0 ! videoconvert    ! video/x-raw,format=I420,width=640,height=480,framerate=30/1 ! videoflip method=rotate-180 ! x264enc tune=zerolatency bitrate=800 speed-preset=superfast ! rtph264pay ! udpsink host=192.168.1.5  port=5000");
+            system("gst-launch-1.0 -v v4l2src device=/dev/video0 ! videoconvert    ! video/x-raw,format=I420,width=640,height=480,framerate=30/1 ! videoflip method=rotate-180 ! x264enc tune=zerolatency bitrate=800 speed-preset=superfast ! rtph264pay ! udpsink host=192.168.1.5  port=5000 > /dev/null");
 #endif
     }
     else

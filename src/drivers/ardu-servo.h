@@ -11,13 +11,13 @@
 
 #define RASPI_SERVO_SYNC_BYTE 0xFF
 
-#define ARDU_SERVO_WHOAMI "ARDUSERVO"
+#define ARDU_SERVO_WHOAMI "ASRV"
 
 typedef struct
 {
     uint8_t sync;
-    uint8_t id;
-    uint16_t delay_microseconds;
+    uint16_t delay_microseconds_azi;
+    uint16_t delay_microseconds_ele;
 } __attribute__((packed)) raspi_servo_msg_t;
 
 
@@ -35,7 +35,7 @@ public:
     ArduServo();
 
     bool init() override;
-    void writeMicroseconds(uint16_t delayUs) override;
+    void writeMicroseconds(uint16_t delayUsAzi, uint16_t delayUsEle) override;
     void writeAngle(float angleDeg) override;
 
 private:

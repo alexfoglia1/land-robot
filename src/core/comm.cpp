@@ -69,7 +69,8 @@ Comm::Comm()
 
     _throttleData = 0;
     _turnData = 0;
-    _servoData = 1500;
+    _servoAziData = 1500;
+    _servoEleData = 1500;
     _backwardData = false;
     _rxTelemetryRequest = false;
     _telemetryAddress = INADDR_ANY;
@@ -144,8 +145,10 @@ void Comm::handleMessageRx(CtrlMessage *message)
         _throttleData = message->throttle;
     }
 
-    _turnData = message->xAxis;
-    _servoData = message->servo;
+    _turnData = message->gyroZ;
+    _servoAziData = message->servo_azi;
+    _servoEleData = message->servo_ele;
+    _servoMode = message->servo_mode;
 }
 
 
@@ -245,9 +248,9 @@ TelemetryHeader Comm::getTelemetryRequest()
     return _rxTelemetryHeader;
 }
 
-uint16_t Comm::servoData()
+uint32_t Comm::servoData()
 {
-    return _servoData;
+    return (((uint32_t)_servoAziData) << 16 | _servoEleData);
 }
 
 
@@ -260,4 +263,10 @@ void Comm::toggleEmergencyStop()
 bool Comm::isEmergencyStop()
 {
     return _isEmergencyStop;
+}
+
+
+uint16_t Comm::servoMode()
+{
+    return _servoMode;
 }

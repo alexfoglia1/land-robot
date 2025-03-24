@@ -52,11 +52,11 @@ bool RaspiServo::init()
 }
 
 
-void RaspiServo::writeMicroseconds(uint16_t delayUs)
+void RaspiServo::writeMicroseconds(uint16_t delayUsAzi, uint16_t delayUsEle)
 {
     pthread_t servoThread;
     int* params = reinterpret_cast<int*>(malloc(2 * sizeof(int)));
-    params[0] = delayUs;
+    params[0] = delayUsAzi;
     params[1] = _range;
     pthread_create(&servoThread, nullptr, *writeMicrosecondsTask, reinterpret_cast<void*>(params));
 }

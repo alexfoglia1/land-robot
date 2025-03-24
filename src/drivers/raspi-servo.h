@@ -10,7 +10,7 @@ class RaspiServo : public Servo
 public:
     RaspiServo();
     bool init() override;
-    void writeMicroseconds(uint16_t delayUs) override;
+    void writeMicroseconds(uint16_t delayUsAzi, uint16_t delayUsEle) override;
     void writeAngle(float angleDeg) override;
 
 private:

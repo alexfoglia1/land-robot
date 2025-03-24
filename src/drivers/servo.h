@@ -13,7 +13,7 @@ class Servo
 public:
     Servo() {};
     virtual bool init() { return true; };
-    virtual void writeMicroseconds(uint16_t delayUs) {};
+    virtual void writeMicroseconds(uint16_t delayUsAzi, uint16_t delayUsEle) {};
     virtual void writeAngle(float angleDeg)  {};
 };
 
